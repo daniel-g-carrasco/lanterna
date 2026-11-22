@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="data/icons/hicolor/128x128/apps/io.github.daniel_g_carrasco.lanterna.png" alt="Lanterna" width="128" height="128">
+  <img src="data/icons/hicolor/scalable/apps/io.github.daniel_g_carrasco.lanterna.svg" alt="Lanterna" width="160" height="160">
 </p>
 
 <h1 align="center">Lanterna</h1>
