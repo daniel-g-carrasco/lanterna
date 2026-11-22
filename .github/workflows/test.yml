@@ -49,7 +49,8 @@ jobs:
       - name: Install GTK 4, libadwaita and a display
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 xvfb gettext
+          sudo apt-get install -y python3-gi gir1.2-gtk-4.0 gir1.2-adw-1 xvfb gettext \
+            gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good
       - run: python3 tools/compile_po.py
       - name: The window tests, and that they really ran
         run: |

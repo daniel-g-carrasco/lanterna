@@ -3,6 +3,7 @@
 
 import os
 import stat
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -55,6 +56,7 @@ class SilenceTest(unittest.TestCase):
 
 
 class PactlTest(unittest.TestCase):
+    @unittest.skipIf(sys.platform == "win32", "a shell script stands for pactl")
     def test_it_says_it_is_a_mixer_or_a_flatpak_is_refused(self):
         with tempfile.TemporaryDirectory() as folder:
             program = os.path.join(folder, "pactl")
