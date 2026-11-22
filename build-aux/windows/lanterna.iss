@@ -71,6 +71,29 @@ Filename: "{app}\Lanterna.exe"; Description: "{cm:LaunchProgram,Lanterna}"; Flag
 Filename: "{app}\Lanterna.exe"; Flags: nowait runasoriginaluser; Check: AppWasRunning
 
 [Code]
+const
+  GENERIC_READ_WRITE = $C0000000;
+  OPEN_EXISTING = 3;
+  ERROR_FILE_NOT_FOUND = 2;
+  ERROR_PATH_NOT_FOUND = 3;
+  SYNCHRONIZE_ACCESS = $00100000;
+  PROCESS_QUERY_LIMITED_INFORMATION = $1000;
+  WM_CLOSE = $0010;
+  CLOSE_WAIT_STEPS = 300;      { 100 ms each: 30 s }
+
+function CreateFileW(Path: String; Access, Share: DWORD; SecurityAttributes: UINT_PTR;
+  Disposition, Flags: DWORD; Template: THandle): THandle;
+  external 'CreateFileW@kernel32.dll stdcall setuponly';
+function CloseNativeHandle(Handle: THandle): BOOL;
+  external 'CloseHandle@kernel32.dll stdcall setuponly';
+function GetWindowThreadProcessId(Window: HWND; var ProcessId: DWORD): DWORD;
+  external 'GetWindowThreadProcessId@user32.dll stdcall setuponly';
+function OpenAppProcess(Access: DWORD; Inherit: BOOL; ProcessId: DWORD): THandle;
+  external 'OpenProcess@kernel32.dll stdcall setuponly';
+function QueryFullProcessImageNameW(AppHandle: THandle; Flags: DWORD;
+  Image: String; var Characters: DWORD): BOOL;
+  external 'QueryFullProcessImageNameW@kernel32.dll stdcall setuponly';
+
 var
   WasRunning: Boolean;
 
@@ -79,12 +102,72 @@ begin
   Result := WasRunning;
 end;
 
-{ Was the app running when Setup started? The Restart Manager closes it
-  (CloseApplications); this only remembers whether to start it again. }
-function PrepareToInstall(var NeedsRestart: Boolean): String;
+{ Opening an image for reading alone succeeds while it runs: ask for write
+  access too, never write (OPEN_EXISTING cannot create or truncate). }
+function CanReplaceInstalledFile(Path: String): Boolean;
+var
+  FileHandle: THandle;
+  ErrorCode: DWORD;
 begin
-  WasRunning := CheckForMutexes('') or (FindWindowByWindowName('Lanterna') <> 0);
+  FileHandle := CreateFileW(Path, GENERIC_READ_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+  if FileHandle <> THandle(-1) then begin
+    CloseNativeHandle(FileHandle);
+    Result := True;
+  end else begin
+    ErrorCode := DLLGetLastError;
+    Result := (ErrorCode = ERROR_FILE_NOT_FOUND) or (ErrorCode = ERROR_PATH_NOT_FOUND);
+  end;
+end;
+
+{ A window called Lanterna is closed only when it belongs to the Lanterna.exe
+  installed here (a folder of that name in Explorer has the same title). }
+function IsInstalledApp(Window: HWND): Boolean;
+var
+  ProcessId, Characters: DWORD;
+  Candidate: THandle;
+  Image: String;
+begin
+  Result := False;
+  ProcessId := 0;
+  if (Window = 0) or (GetWindowThreadProcessId(Window, ProcessId) = 0) then Exit;
+  Candidate := OpenAppProcess(SYNCHRONIZE_ACCESS or PROCESS_QUERY_LIMITED_INFORMATION, False, ProcessId);
+  if Candidate = 0 then Exit;
+  try
+    Characters := 32768;
+    SetLength(Image, Characters);
+    if not QueryFullProcessImageNameW(Candidate, 0, Image, Characters) then Exit;
+    SetLength(Image, Characters);
+    Result := CompareText(ExpandFileName(Image), ExpandFileName(ExpandConstant('{app}\Lanterna.exe'))) = 0;
+  finally
+    CloseNativeHandle(Candidate);
+  end;
+end;
+
+{ Was the app running when Setup started? Then it is asked to close, as its
+  own X does (what is on the TV stops), and Setup waits for its files: the
+  session bus GLib started for it (gdbus.exe, in its folder) quits about three
+  seconds after the app, and the Restart Manager cannot close it, so without
+  the wait an update over a running app was refused (exit code 5). Whatever
+  is still open after 30 s is left to the Restart Manager, as before. }
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Window: HWND;
+  Step: Integer;
+begin
   Result := '';
+  Window := FindWindowByWindowName('Lanterna');
+  WasRunning := CheckForMutexes('') or (Window <> 0);
+  if not IsInstalledApp(Window) then Exit;
+  PostMessage(Window, WM_CLOSE, 0, 0);
+  for Step := 1 to CLOSE_WAIT_STEPS do begin
+    if CanReplaceInstalledFile(ExpandConstant('{app}\Lanterna.exe')) and
+       CanReplaceInstalledFile(ExpandConstant('{app}\_internal\gdbus.exe')) then begin
+      Log(Format('Lanterna and its session bus closed after %d ms', [Step * 100]));
+      Exit;
+    end;
+    Sleep(100);
+  end;
+  Log('Lanterna or its session bus still open after 30 s: left to the Restart Manager');
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
