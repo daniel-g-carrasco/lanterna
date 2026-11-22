@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata: shown by GNOME Software. Every release goes here
+     too, in the same words as CHANGELOG.md, shorter (tests/test_release.py
+     checks that the newest one is the version in the code). -->
+<component type="desktop-application">
+  <id>io.github.daniel_g_carrasco.lanterna</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Lanterna</name>
+  <summary>Show photos, slides, videos and films on your TV with Chromecast</summary>
+  <summary xml:lang="it">Mostra foto, presentazioni, video e film sulla TV con Chromecast</summary>
+
+  <developer id="io.github.daniel_g_carrasco">
+    <name>Daniel Grasso</name>
+  </developer>
+
+  <description>
+    <p>
+      Lanterna sends photos, videos and films from this computer to a TV through the Chromecast the TV has inside, and can show the whole screen or a single window there too. The TV plays a file itself whenever it can, so the picture keeps its full quality; only what the TV cannot play is converted on the fly.
+    </p>
+    <p xml:lang="it">
+      Lanterna manda foto, video e film da questo computer alla TV attraverso il Chromecast che la TV ha dentro, e può mostrarci anche tutto lo schermo o una sola finestra. Quando può, è la TV a riprodurre il file, così l'immagine conserva tutta la qualità; solo ciò che la TV non sa riprodurre viene convertito al volo.
+    </p>
+    <ul>
+      <li>Finds the TVs on the network by itself and remembers the one used last</li>
+      <li xml:lang="it">Trova da sola le TV sulla rete e ricorda l'ultima usata</li>
+      <li>Photos one at a time, chosen, dropped or a whole folder</li>
+      <li xml:lang="it">Foto una alla volta, scelte, trascinate o un'intera cartella</li>
+      <li>Films with their sound converted only when the TV cannot play it</li>
+      <li xml:lang="it">Film con l'audio convertito solo quando la TV non sa riprodurlo</li>
+      <li>Pause, seek, the TV's volume, previous and next, from the window or the keyboard</li>
+      <li xml:lang="it">Pausa, posizione, volume della TV, precedente e successiva, dalla finestra o dalla tastiera</li>
+      <li>The screen or a window on the TV, with the sound, while this computer keeps quiet</li>
+      <li xml:lang="it">Lo schermo o una finestra sulla TV, con l'audio, mentre questo computer resta in silenzio</li>
+    </ul>
+  </description>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Choose photos, a video, a film or the screen</caption>
+      <caption xml:lang="it">Scegli foto, un video, un film o lo schermo</caption>
+      <image>https://raw.githubusercontent.com/daniel-g-carrasco/lanterna/v0.2.0/data/screenshots/main-window.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Photos on the TV, one by one</caption>
+      <caption xml:lang="it">Le foto sulla TV, una alla volta</caption>
+      <image>https://raw.githubusercontent.com/daniel-g-carrasco/lanterna/v0.2.0/data/screenshots/photos.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>A film at full quality, with its controls</caption>
+      <caption xml:lang="it">Un film a piena qualità, con i comandi</caption>
+      <image>https://raw.githubusercontent.com/daniel-g-carrasco/lanterna/v0.2.0/data/screenshots/film.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The screen on the TV</caption>
+      <caption xml:lang="it">Lo schermo sulla TV</caption>
+      <image>https://raw.githubusercontent.com/daniel-g-carrasco/lanterna/v0.2.0/data/screenshots/screen.png</image>
+    </screenshot>
+  </screenshots>
+
+  <launchable type="desktop-id">io.github.daniel_g_carrasco.lanterna.desktop</launchable>
+  <provides>
+    <binary>lanterna</binary>
+  </provides>
+
+  <url type="homepage">https://github.com/daniel-g-carrasco/lanterna</url>
+  <url type="bugtracker">https://github.com/daniel-g-carrasco/lanterna/issues</url>
+  <url type="vcs-browser">https://github.com/daniel-g-carrasco/lanterna</url>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#ecdfc4</color>
+    <color type="primary" scheme_preference="dark">#48443e</color>
+  </branding>
+
+  <content_rating type="oars-1.1"/>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+
+  <releases>
+    <release version="0.2.0" date="2026-11-22" type="development">
+      <description>
+        <p>The first public version: the TVs found on the network, photos, videos and films shown on the TV at full quality (only what the TV cannot play is converted), pause, seek, volume, previous and next, the screen or a window with its sound, and the app's own icon.</p>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-10-25" type="development">
+      <description>
+        <p>First version: a folder counted, with the preferences, the translations, the installer for Windows and the Flatpak for Linux every app of this author has.</p>
+      </description>
+    </release>
+  </releases>
+</component>

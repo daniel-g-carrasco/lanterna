@@ -1,0 +1,73 @@
+# Flatpak manifest, used for local builds and by the CI.
+#
+#   flatpak install flathub org.gnome.Platform//50 org.gnome.Sdk//50
+#   flatpak-builder --user --install --force-clean build-dir \
+#       build-aux/flatpak/io.github.daniel_g_carrasco.lanterna.yaml
+#   flatpak run io.github.daniel_g_carrasco.lanterna
+#
+# A Python dependency outside the GNOME runtime goes in a module of its own,
+# installed from a pinned wheel (url + sha256, x86_64 and aarch64) with
+# `pip3 install --no-deps --no-index`: no network at build time, the
+# version pinned here as in the CI (see cartiglio's manifest for PyMuPDF).
+app-id: io.github.daniel_g_carrasco.lanterna
+branch: stable
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: lanterna
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  # The TV: TLS to it, the HTTP server it reads the media from, the mDNS
+  # question asked directly when Avahi has no answer.
+  - --share=network
+  # The TVs on the network, as Avahi knows them (devices.py).
+  - --system-talk-name=org.freedesktop.Avahi
+  # The computer stays awake while something is on: GTK's inhibit goes to a
+  # session manager, and niri has none (keepawake.py).
+  - --system-talk-name=org.freedesktop.login1
+  # The sound of the screen: the monitor of the default output (screencast.py).
+  - --socket=pulseaudio
+  # Read-only: the TV reads files from here through the app's server. A photo
+  # brings its neighbours along, which a file handed over by the portal cannot
+  # do; whatever is outside the home comes through the file chooser's portal,
+  # one choice at a time. The screen needs no permission here: the portal asks.
+  - --filesystem=home:ro
+  # The user's GTK 4 style (accent colours from Noctalia, matugen and the
+  # like live in ~/.config/gtk-4.0/gtk.css): GTK looks for it in the app's
+  # own config folder, where Flatpak puts it only with this. Read-only.
+  - --filesystem=xdg-config/gtk-4.0:ro
+
+modules:
+  - name: lanterna
+    buildsystem: simple
+    build-commands:
+      - install -d /app/share/lanterna
+      - cp -r src/lanterna /app/share/lanterna/lanterna
+      - install -Dm755 bin/lanterna /app/bin/lanterna
+      - python3 tools/compile_po.py --dest /app/share/locale
+      - install -Dm644 data/io.github.daniel_g_carrasco.lanterna.desktop -t /app/share/applications
+      - install -Dm644 data/io.github.daniel_g_carrasco.lanterna.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 data/icons/hicolor/scalable/apps/io.github.daniel_g_carrasco.lanterna.svg -t /app/share/icons/hicolor/scalable/apps
+      - install -Dm644 data/icons/hicolor/symbolic/apps/io.github.daniel_g_carrasco.lanterna-symbolic.svg -t /app/share/icons/hicolor/symbolic/apps
+      - install -Dm644 data/icons/hicolor/64x64/apps/io.github.daniel_g_carrasco.lanterna.png -t /app/share/icons/hicolor/64x64/apps
+      - install -Dm644 data/icons/hicolor/128x128/apps/io.github.daniel_g_carrasco.lanterna.png -t /app/share/icons/hicolor/128x128/apps
+      - install -Dm644 data/icons/hicolor/256x256/apps/io.github.daniel_g_carrasco.lanterna.png -t /app/share/icons/hicolor/256x256/apps
+      # fail the build early on an invalid desktop entry or metainfo
+      - desktop-file-validate /app/share/applications/io.github.daniel_g_carrasco.lanterna.desktop
+      - appstreamcli validate --no-net /app/share/metainfo/io.github.daniel_g_carrasco.lanterna.metainfo.xml
+      - /app/bin/lanterna --version
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - build-dir
+          - .flatpak-builder
+          - locale
+          - .ruff_cache
+          - dist
+          - build

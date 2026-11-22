@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Lanterna
+Comment=Show photos, slides, videos and films on your TV with Chromecast
+Comment[it]=Mostra foto, presentazioni, video e film sulla TV con Chromecast
+Exec=lanterna %F
+Icon=io.github.daniel_g_carrasco.lanterna
+Terminal=false
+Categories=AudioVideo;Video;GTK;
+MimeType=video/mp4;video/x-matroska;video/webm;video/quicktime;video/x-msvideo;image/jpeg;image/png;image/webp;image/gif;
+Keywords=tv;chromecast;cast;photos;video;film;mirror;
+Keywords[it]=tv;televisione;chromecast;foto;video;film;schermo;
+StartupNotify=true
