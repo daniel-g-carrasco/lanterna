@@ -43,6 +43,8 @@ class Config:
     screen_sound: bool = True            # the sound goes to the TV with the screen
     screen_quiet_here: bool = True       # and this computer stays quiet meanwhile
     muted_output: str = ""               # an output this app has muted and not yet given back (localsound.py)
+    fixed_port: bool = False             # the TV fetches from a port of our choice, not a free one (server.py)
+    server_port: int = 8765              # that port, while fixed_port is on
     # settings of a newer version this one does not know, written back as they were
     extra: dict = field(default_factory=dict, compare=False, repr=False)
     # what load() had to do to read the file (Notice); never saved

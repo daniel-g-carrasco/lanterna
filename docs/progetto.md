@@ -208,3 +208,13 @@ Prima della pubblicazione:
 - chiave GPG dedicata al repository Flatpak, RSA 4096 "Lanterna Flatpak repository", impronta `8CC344A40BD6693E229557FDFBC115ECDDE3477A`, privata in `~/.config/lanterna-flatpak/private-key.asc` (600) e nel segreto `FLATPAK_GPG_PRIVATE_KEY`; la chiave minisign delle release è quella condivisa con P7M Extractor, PDF Cropper e Cartiglio.
 
 README rifatto sul modello di quello di Spola, con due GIF d'uso e una piccola galleria in chiaro e in scuro. Le immagini sono la finestra vera, guidata dalle prove con la TV finta (`tests/_fake_tv.py`) e foto inventate, su un display Broadway a parte, mai nella sessione: `tools/screenshots/` (`run.sh`, `demo.py`, `compose.py`; la TV disegnata accanto alla finestra mostra la foto che Lanterna le ha mandato). Due trappole [V]: senza un browser collegato a Broadway le animazioni non avanzano (un dialogo resta trasparente, uno `Gtk.Stack` a metà dissolvenza), quindi `gtk-enable-animations` spento; e il CSS utente di GTK (quello di Noctalia) cambia i colori, quindi `XDG_CONFIG_HOME` vuoto. L'accento resta quello del sistema (giallo sul portatile).
+
+## Appendice K. 25/11/2026: la porta fissa, 0.3.0
+
+Dalla issue #1: la TV in una rete separata (quella dei dispositivi di casa), con un firewall in mezzo. La scoperta passa da un ripetitore mDNS del router e la connessione Cast va dal computer alla TV; l'unico flusso al contrario è la TV che prende i file dal piccolo server di Lanterna, che ascoltava su una porta scelta dal sistema a ogni avvio.
+
+- Preferenze, gruppo Rete: **Porta fissa**, spenta di predefinito (comportamento di prima), e il numero, 8765 se non se ne sceglie un altro. Vale da subito se non c'è nulla sulla TV, altrimenti dopo Stop (`Session.set_port`, `MediaServer.stale`).
+- Il server parte prima di toccare la TV: una porta che non si può avere è detta con il suo numero, senza aprire il ricevitore. Il server ora parte anche fuori dal controllo della connessione: dopo un film finito da solo la connessione resta, e con la porta cambiata la TV avrebbe ricevuto un indirizzo senza nessuno in ascolto.
+- **Windows** [V, PC, Python 3.14]: con `SO_REUSEADDR`, che `HTTPServer` attiva da solo, un secondo programma si aggancia senza errori a una porta già in uso, e la porta occupata non si vedrebbe mai. Su Windows il server usa `SO_EXCLUSIVEADDRUSE`, che rifiuta in entrambi i versi. Su Linux, host e Flatpak, la seconda apertura è già rifiutata (EADDRINUSE) [V].
+- Sul PC Lanterna non era installata, quindi non c'erano regole del firewall da leggere: il README dice dove controllare l'ambito della regola, senza dare per scontato cosa fa Windows da solo.
+- L'icona con la fiamma senza contorno scuro (commit del modello `tools/check_icon.py`) entra con questa versione.

@@ -6,6 +6,20 @@ are `0.x`, development releases, published as Flatpak updates from the app's
 own repository and as Windows installers. The same notes, shorter, are in
 the app's metainfo, which software centres show.
 
+## [0.3.0] - 2026-11-25
+
+### Added
+- A fixed port for the TV, in Preferences, Network: off by default, when the
+  system picks a free port each time as before. On, the TV fetches what is
+  shown from that port only (8765 unless you choose another), so a TV on
+  another network behind a firewall needs a single port let through. A port
+  another program has is said with its number, before the TV is touched
+  ([#1](https://github.com/daniel-g-carrasco/lanterna/issues/1)).
+- In the README: what a TV on another network needs.
+
+### Changed
+- The icon's flame without the faint dark line round its edge.
+
 ## [0.2.0] - 2026-11-22
 
 The first public version.
@@ -37,4 +51,5 @@ The first public version.
   preferences, the translations, the installer for Windows and the Flatpak
   for Linux every app of this author has.
 
+[0.3.0]: https://github.com/daniel-g-carrasco/lanterna/releases/tag/v0.3.0
 [0.2.0]: https://github.com/daniel-g-carrasco/lanterna/releases/tag/v0.2.0

@@ -140,6 +140,7 @@ class WindowTest(unittest.TestCase):
         self.media_server.start()
         self.addCleanup(self.media_server.stop)
         self.made: list[Session] = []
+        self.ports: list[int] = []
         for name in (*INFOS, "notes.txt"):
             (Path(self.tmp) / name).write_bytes(b"x" * 100)
 
@@ -151,7 +152,8 @@ class WindowTest(unittest.TestCase):
         self.addCleanup(theirs.close)
         return Channel(ours)
 
-    def make_session(self, device, on_state):
+    def make_session(self, device, on_state, port=0):
+        self.ports.append(port)
         session = Session(device, on_state, connect=self.connect, media_server=self.media_server, probe=fake_probe,
                           producer=lambda path, way, info, out, start_s=0.0, job=None: out.write(b"live"))
         self.made.append(session)
@@ -274,6 +276,24 @@ class WindowTest(unittest.TestCase):
         window = self.window()
         PreferencesDialog(window, self.app)._set("screen_sound", False)
         self.assertFalse(self.app.cfg.screen_sound)
+
+    def test_the_fixed_port_reaches_the_sessions_and_is_kept(self):
+        window = self.showing("film.mp4")
+        self.assertEqual(self.ports, [0])               # off by default: a free port each time
+        session = window.session
+        dialog = PreferencesDialog(window, self.app)
+        with mock.patch.object(session, "set_port") as set_port:
+            dialog._set_port("fixed_port", True)
+            self.assertTrue(_setup.spin(lambda: set_port.call_args == mock.call(8765)), set_port.call_args)
+            dialog._set_port("server_port", 9000)
+            self.assertTrue(_setup.spin(lambda: set_port.call_args == mock.call(9000)), set_port.call_args)
+            saved = self.app.saved
+            dialog._set_port("server_port", 9000)       # the same value: nothing to save or to tell
+            self.assertEqual(self.app.saved, saved)
+        self.assertEqual((self.app.cfg.fixed_port, self.app.cfg.server_port, window.server_port()), (True, 9000, 9000))
+        window.session = None
+        window._session_on(TV)
+        self.assertEqual(self.ports[-1], 9000)
 
     def test_the_tvs_are_listed_and_the_one_used_last_is_selected(self):
         self.app.cfg.last_device = "tv2"

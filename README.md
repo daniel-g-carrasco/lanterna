@@ -71,6 +71,16 @@ bin/lanterna ~/Videos/film.mkv       # shown at once on the TV used last
 
 A TV or a box with Chromecast built in (Android TV and Google TV ones have it), on the same network as this computer. Lanterna was tried on a Philips Android TV; reports from other TVs are welcome in the [issues](https://github.com/daniel-g-carrasco/lanterna/issues).
 
+### A TV on another network
+
+The TV can also sit on a separate network, for example one for smart-home devices, behind a firewall. Three things have to get through:
+
+- **Finding the TV**: Chromecasts announce themselves with mDNS (`_googlecast._tcp`, UDP 5353), which stays inside its own network. The router has to repeat it between the two, with an mDNS repeater or reflector.
+- **Talking to the TV**: from this computer to the TV, TCP 8009.
+- **The TV fetching what is shown**: from the TV to this computer, TCP on the port of Lanterna's small web server. That port is a free one picked at every start, so a firewall would have to open them all: in **Preferences → Network**, turn on **Fixed port** (8765 unless you choose another) and let only that one through.
+
+On Windows the firewall asks the first time Lanterna serves something. The rule it makes has to accept the TV's address even though it is not on this computer's network: in Windows Defender Firewall, Advanced settings, Inbound rules, Lanterna, Scope, the remote addresses must be "Any IP address" or include the TV's network.
+
 ## Development
 
 ```bash

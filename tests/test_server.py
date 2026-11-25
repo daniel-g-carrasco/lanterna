@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """The media server: a file served whole and by ranges, only at its
 token, only to the allowed addresses, a live stream produced per request,
-and nothing once the item is withdrawn or the server stopped."""
+and nothing once the item is withdrawn or the server stopped; a fixed port
+when one is asked for, and a busy one said with its number."""
 
 import http.client
+import socket
 import tempfile
 import threading
 import unittest
@@ -142,6 +144,56 @@ class ServerTest(unittest.TestCase):
 
     def test_the_local_address_towards_loopback_is_loopback(self):
         self.assertEqual(server.local_address_towards("127.0.0.1"), "127.0.0.1")
+
+
+def free_port() -> int:
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        return probe.getsockname()[1]
+
+
+def holding(port: int) -> socket.socket:
+    """Another program on that port."""
+    other = socket.socket()
+    other.bind(("0.0.0.0", port))
+    other.listen()
+    return other
+
+
+class FixedPortTest(unittest.TestCase):
+    def test_a_fixed_port_is_the_one_the_tv_is_given(self):
+        port = free_port()
+        srv = MediaServer(port=port)
+        srv.start()
+        self.addCleanup(srv.stop)
+        self.assertEqual(srv.port, port)
+        url = srv.publish(Item("a.jpg", "image/jpeg", path=__file__), "127.0.0.1")
+        self.assertEqual(urllib.parse.urlsplit(url).port, port)
+
+    def test_a_busy_fixed_port_is_said_with_its_number(self):
+        port = free_port()
+        other = holding(port)
+        self.addCleanup(other.close)
+        srv = MediaServer(port=port)
+        with self.assertRaises(server.PortBusy) as caught:
+            srv.start()
+        self.assertEqual(caught.exception.port, port)
+        self.assertTrue(caught.exception.reason)
+        self.assertEqual(srv.port, 0)                   # nothing half open
+
+    def test_a_new_port_counts_from_the_next_start(self):
+        srv = MediaServer()
+        srv.start()
+        self.addCleanup(srv.stop)
+        self.assertFalse(srv.stale)
+        port = free_port()
+        srv.port_wanted = port
+        self.assertTrue(srv.stale)
+        srv.stop()
+        srv.start()
+        self.assertEqual((srv.port, srv.stale), (port, False))
+        srv.port_wanted = 0                             # back to a free one each time
+        self.assertTrue(srv.stale)
 
 
 if __name__ == "__main__":

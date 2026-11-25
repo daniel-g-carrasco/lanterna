@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lanterna\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 14:40+0100\n"
+"POT-Creation-Date: 2026-11-22 19:46+0100\n"
 "PO-Revision-Date: 2026-10-25 10:00+0200\n"
 "Last-Translator: Daniel Grasso <code@danielgrasso.com>\n"
 "Language-Team: Italian\n"
@@ -139,7 +139,7 @@ msgstr "Lo schermo"
 msgid "Nothing to show"
 msgstr "Niente da mostrare"
 
-#: src/lanterna/session.py:216 src/lanterna/window.py:313
+#: src/lanterna/session.py:216 src/lanterna/window.py:318
 #, python-brace-format
 msgid "{name} cannot be read: {error}"
 msgstr "Impossibile leggere {name}: {error}"
@@ -149,41 +149,48 @@ msgstr "Impossibile leggere {name}: {error}"
 msgid "The TV refused this file ({reasons})"
 msgstr "La TV ha rifiutato questo file ({reasons})"
 
-#: src/lanterna/session.py:250
+#: src/lanterna/session.py:242
+#, python-brace-format
+msgid ""
+"Port {port} cannot be used ({reason}). Another program may have it: choose "
+"another one in Preferences, or turn the fixed port off."
+msgstr "Porta {port} non utilizzabile ({reason}). Forse la usa un altro programma: sceglierne un'altra nelle Preferenze, oppure spegnere la porta fissa."
+
+#: src/lanterna/session.py:259
 #, python-brace-format
 msgid "{tv} does not answer: {error}"
 msgstr "{tv} non risponde: {error}"
 
-#: src/lanterna/session.py:297
+#: src/lanterna/session.py:304
 msgid "The connection to the TV is gone"
 msgstr "La connessione con la TV si è interrotta"
 
-#: src/lanterna/session.py:317
+#: src/lanterna/session.py:324
 msgid "The TV did not start playing"
 msgstr "La TV non ha avviato la riproduzione"
 
-#: src/lanterna/session.py:333
+#: src/lanterna/session.py:340
 #, python-brace-format
 msgid "The stream stopped: {error}"
 msgstr "Il flusso si è interrotto: {error}"
 
-#: src/lanterna/session.py:377 src/lanterna/session.py:433
+#: src/lanterna/session.py:384 src/lanterna/session.py:455
 msgid "Nothing is playing"
 msgstr "Non c'è niente in riproduzione"
 
-#: src/lanterna/session.py:379
+#: src/lanterna/session.py:386
 msgid "The screen has no other point to go to"
 msgstr "Lo schermo non ha un altro punto a cui andare"
 
-#: src/lanterna/session.py:452
+#: src/lanterna/session.py:474
 msgid "The TV could not play it this way"
 msgstr "La TV non è riuscita a riprodurlo in questo modo"
 
-#: src/lanterna/session.py:468
+#: src/lanterna/session.py:490
 msgid "The TV stopped playing"
 msgstr "La TV ha interrotto la riproduzione"
 
-#: src/lanterna/session.py:499
+#: src/lanterna/session.py:521
 #, python-brace-format
 msgid "Lost the connection to {tv}: {reason}"
 msgstr "Connessione con {tv} persa: {reason}"
@@ -270,236 +277,256 @@ msgstr "l'installer non è firmato dal progetto: non avviato"
 msgid "download failed ({code})"
 msgstr "scaricamento non riuscito ({code})"
 
-#: src/lanterna/window.py:84
+#: src/lanterna/window.py:86
 msgid "Look Again"
 msgstr "Cerca di nuovo"
 
-#: src/lanterna/window.py:113
+#: src/lanterna/window.py:115
 msgid "The TV to show things on"
 msgstr "La TV su cui mostrare"
 
-#: src/lanterna/window.py:116
+#: src/lanterna/window.py:118
 msgid "Look for TVs Again"
 msgstr "Cerca di nuovo le TV"
 
-#: src/lanterna/window.py:122
+#: src/lanterna/window.py:124
 msgid "Check for Updates…"
 msgstr "Controlla aggiornamenti…"
 
-#: src/lanterna/window.py:123 src/lanterna/window.py:624
+#: src/lanterna/window.py:125 src/lanterna/window.py:673
 msgid "Preferences"
 msgstr "Preferenze"
 
-#: src/lanterna/window.py:124
+#: src/lanterna/window.py:126
 #, python-brace-format
 msgid "About {app}"
 msgstr "Informazioni su {app}"
 
-#: src/lanterna/window.py:127
+#: src/lanterna/window.py:129
 msgid "Main Menu"
 msgstr "Menu principale"
 
-#: src/lanterna/window.py:137
+#: src/lanterna/window.py:139
 msgid "Show It on the TV"
 msgstr "Mostralo sulla TV"
 
-#: src/lanterna/window.py:138
+#: src/lanterna/window.py:140
 msgid "Choose photos, a video or a film, or drop them here."
 msgstr "Scegli foto, un video o un film, oppure trascinali qui."
 
-#: src/lanterna/window.py:140
+#: src/lanterna/window.py:142
 msgid "Choose Files…"
 msgstr "Scegli i file…"
 
-#: src/lanterna/window.py:143
+#: src/lanterna/window.py:145
 msgid "Choose a Folder…"
 msgstr "Scegli una cartella…"
 
-#: src/lanterna/window.py:146
+#: src/lanterna/window.py:148
 msgid "Show the Screen…"
 msgstr "Mostra lo schermo…"
 
-#: src/lanterna/window.py:168
+#: src/lanterna/window.py:170
 msgid "Go to another point of the film"
 msgstr "Vai a un altro punto del film"
 
-#: src/lanterna/window.py:177
+#: src/lanterna/window.py:182
 msgid "Previous"
 msgstr "Precedente"
 
-#: src/lanterna/window.py:181 src/lanterna/window.py:412
+#: src/lanterna/window.py:186 src/lanterna/window.py:430
 msgid "Pause"
 msgstr "Pausa"
 
-#: src/lanterna/window.py:185
+#: src/lanterna/window.py:190
 msgid "Next"
 msgstr "Successivo"
 
-#: src/lanterna/window.py:191
+#: src/lanterna/window.py:196
 msgid "The TV's Volume"
 msgstr "Volume della TV"
 
-#: src/lanterna/window.py:197
+#: src/lanterna/window.py:202
 msgid "Stop"
 msgstr "Ferma"
 
-#: src/lanterna/window.py:223
+#: src/lanterna/window.py:228
 msgid "No TV found. Is it on, and on this network?"
 msgstr "Nessuna TV trovata. È accesa e su questa rete?"
 
-#: src/lanterna/window.py:228
+#: src/lanterna/window.py:233
 #, python-brace-format
 msgid "TVs cannot be looked for: {reason}"
 msgstr "Impossibile cercare le TV: {reason}"
 
-#: src/lanterna/window.py:242
+#: src/lanterna/window.py:247
 msgid "Looking for TVs…"
 msgstr "Ricerca delle TV…"
 
-#: src/lanterna/window.py:267
+#: src/lanterna/window.py:272
 msgid "Photos and Videos"
 msgstr "Foto e video"
 
-#: src/lanterna/window.py:270
+#: src/lanterna/window.py:275
 msgid "All Files"
 msgstr "Tutti i file"
 
-#: src/lanterna/window.py:275
+#: src/lanterna/window.py:280
 msgid "Choose What to Show"
 msgstr "Scegli cosa mostrare"
 
-#: src/lanterna/window.py:287
+#: src/lanterna/window.py:292
 msgid "Choose a Folder to Show"
 msgstr "Scegli una cartella da mostrare"
 
-#: src/lanterna/window.py:315
+#: src/lanterna/window.py:320
 #, python-brace-format
 msgid "No photos or videos in “{name}”"
 msgstr "Nessuna foto o video in «{name}»"
 
-#: src/lanterna/window.py:327
+#: src/lanterna/window.py:332
 msgid "Waiting for a TV to show it on"
 msgstr "In attesa di una TV su cui mostrarlo"
 
-#: src/lanterna/window.py:346
+#: src/lanterna/window.py:361
 msgid "No TV to show it on yet"
 msgstr "Ancora nessuna TV su cui mostrarlo"
 
-#: src/lanterna/window.py:356
+#: src/lanterna/window.py:371
 msgid "The sharing has ended"
 msgstr "La condivisione è terminata"
 
-#: src/lanterna/window.py:371
+#: src/lanterna/window.py:386
 #, python-brace-format
 msgid "Something went wrong: {error}"
 msgstr "Qualcosa è andato storto: {error}"
 
-#: src/lanterna/window.py:399
+#: src/lanterna/window.py:415
 msgid "Showing something on the TV"
 msgstr "Qualcosa è in onda sulla TV"
 
-#: src/lanterna/window.py:412
+#: src/lanterna/window.py:430
 msgid "Play"
 msgstr "Riproduci"
 
-#: src/lanterna/window.py:441
+#: src/lanterna/window.py:459
 msgid "This computer could not be silenced"
 msgstr "Non è stato possibile silenziare questo computer"
 
-#: src/lanterna/window.py:458
+#: src/lanterna/window.py:476
 #, python-brace-format
 msgid "Connecting to {tv}…"
 msgstr "Connessione a {tv}…"
 
-#: src/lanterna/window.py:460
+#: src/lanterna/window.py:478
 #, python-brace-format
 msgid "Loading on {tv}…"
 msgstr "Caricamento su {tv}…"
 
-#: src/lanterna/window.py:462
+#: src/lanterna/window.py:480
 #, python-brace-format
 msgid "Showing the screen on {tv}"
 msgstr "Lo schermo è su {tv}"
 
-#: src/lanterna/window.py:464
+#: src/lanterna/window.py:482
 #, python-brace-format
 msgid "Showing a window on {tv}"
 msgstr "Una finestra è su {tv}"
 
-#: src/lanterna/window.py:466
+#: src/lanterna/window.py:484
 #, python-brace-format
 msgid "On {tv}, {n} of {count}"
 msgstr "Su {tv}, {n} di {count}"
 
-#: src/lanterna/window.py:468
+#: src/lanterna/window.py:486
 #, python-brace-format
 msgid "Paused on {tv}"
 msgstr "In pausa su {tv}"
 
-#: src/lanterna/window.py:469
+#: src/lanterna/window.py:487
 #, python-brace-format
 msgid "Playing on {tv}"
 msgstr "In riproduzione su {tv}"
 
-#: src/lanterna/window.py:629
+#: src/lanterna/window.py:678
 msgid "Appearance"
 msgstr "Aspetto"
 
-#: src/lanterna/window.py:630
+#: src/lanterna/window.py:679
 msgid "Follow the System"
 msgstr "Come il sistema"
 
-#: src/lanterna/window.py:630
+#: src/lanterna/window.py:679
 msgid "Light"
 msgstr "Chiaro"
 
-#: src/lanterna/window.py:630
+#: src/lanterna/window.py:679
 msgid "Dark"
 msgstr "Scuro"
 
-#: src/lanterna/window.py:631
+#: src/lanterna/window.py:680
 msgid "Theme"
 msgstr "Tema"
 
-#: src/lanterna/window.py:636
+#: src/lanterna/window.py:685
 msgid "Desktop language"
 msgstr "Lingua del sistema"
 
-#: src/lanterna/window.py:637
+#: src/lanterna/window.py:686
 msgid "Language"
 msgstr "Lingua"
 
-#: src/lanterna/window.py:637
+#: src/lanterna/window.py:686
 msgid "Applied at the next start"
 msgstr "Vale dal prossimo avvio"
 
-#: src/lanterna/window.py:644
+#: src/lanterna/window.py:693
 msgid "Showing the Screen"
 msgstr "Mostrare lo schermo"
 
-#: src/lanterna/window.py:645
+#: src/lanterna/window.py:694
 msgid "Send the sound too"
 msgstr "Manda anche l'audio"
 
-#: src/lanterna/window.py:648
+#: src/lanterna/window.py:697
 msgid "Keep this computer quiet meanwhile"
 msgstr "Tieni in silenzio questo computer nel frattempo"
 
-#: src/lanterna/window.py:649
+#: src/lanterna/window.py:698
 msgid ""
 "The TV plays the sound about three seconds later, so the two would echo. It "
 "comes back when you stop."
-msgstr "La TV riproduce il suono circa tre secondi dopo, quindi i due farebbero eco. Torna quando ti fermi."
+msgstr ""
+"La TV riproduce il suono circa tre secondi dopo, quindi i due farebbero eco. "
+"Torna quando ti fermi."
 
-#: src/lanterna/window.py:657
+#: src/lanterna/window.py:705
+msgid "Network"
+msgstr "Rete"
+
+#: src/lanterna/window.py:706
+msgid "Fixed port"
+msgstr "Porta fissa"
+
+#: src/lanterna/window.py:707
+msgid ""
+"For a TV on another network behind a firewall: the TV fetches what is shown "
+"from this computer on this port only. Off, a free port is picked each time."
+msgstr "Per una TV in un'altra rete, dietro un firewall: la TV prende ciò che è mostrato da questo computer solo su questa porta. Spenta, ogni volta si usa una porta libera."
+
+#: src/lanterna/window.py:712
+msgid "Port"
+msgstr "Porta"
+
+#: src/lanterna/window.py:722
 msgid "Updates"
 msgstr "Aggiornamenti"
 
-#: src/lanterna/window.py:658
+#: src/lanterna/window.py:723
 msgid "Check for updates at start-up"
 msgstr "Controlla gli aggiornamenti all'avvio"
 
-#: src/lanterna/window.py:659
+#: src/lanterna/window.py:724
 msgid ""
 "Once a day, from the project's releases on GitHub; nothing about you or your "
 "files is sent"
@@ -507,12 +534,10 @@ msgstr ""
 "Una volta al giorno, dalle versioni pubblicate su GitHub; non viene inviato "
 "nulla su di te o sui tuoi file"
 
-#: src/lanterna/window.py:682
+#: src/lanterna/window.py:753
 msgid "Show photos, slides, videos and films on your TV with Chromecast."
 msgstr "Mostra foto, presentazioni, video e film sulla TV con Chromecast."
 
-#: src/lanterna/window.py:687
+#: src/lanterna/window.py:758
 msgid "Measuring the space taken by the app's files…"
 msgstr "Misura dello spazio occupato dai file dell'app…"
-
-#, python-brace-format

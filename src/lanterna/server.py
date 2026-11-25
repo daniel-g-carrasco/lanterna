@@ -11,6 +11,10 @@ and on nothing else:
   look with a browser): any other client gets 403;
 - only while the item is on: `stop()` closes the socket.
 
+The port is the system's choice, a free one at every start, unless a fixed
+one is asked for (the preferences): a TV on another network behind a
+firewall needs a single port to be let through towards this computer.
+
 Files are served with byte ranges (`Range: bytes=a-b`), which the TV's
 player uses to seek and to read the index at the end of an MP4; a live
 stream (the screen, a transcoded film) is produced afresh for every GET by
@@ -28,6 +32,8 @@ import urllib.parse
 from collections.abc import Callable
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+from . import WINDOWS
 
 CHUNK = 256 * 1024
 RANGE = re.compile(r"bytes=(\d*)-(\d*)$")
@@ -68,6 +74,26 @@ def parse_range(header: str | None, size: int) -> tuple[int, int] | None | bool:
     return start, min(end, size - 1)
 
 
+class PortBusy(OSError):
+    """The fixed port cannot be had: another program has it, or the system refuses it."""
+
+    def __init__(self, port: int, reason: str):
+        super().__init__(f"port {port}: {reason}")
+        self.port, self.reason = port, reason
+
+
+class _Server(ThreadingHTTPServer):
+    daemon_threads = True
+    # On Windows SO_REUSEADDR lets a second program bind a port that is in use, and the TV may reach either one:
+    # a busy fixed port would go unnoticed. There a socket asks for the port to itself instead.
+    allow_reuse_address = not WINDOWS
+
+    def server_bind(self):
+        if WINDOWS:
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def local_address_towards(host: str) -> str:
     """The address of this computer that the TV reaches: the one the
     kernel would route a packet to the TV from (no packet is sent)."""
@@ -80,12 +106,14 @@ def local_address_towards(host: str) -> str:
 
 
 class MediaServer:
-    """One server, one item at a time. Thread-safe; start() binds a free
-    port on every interface (the TV may be on Wi-Fi or Ethernet)."""
+    """One server, one item at a time. Thread-safe; start() binds on every
+    interface (the TV may be on Wi-Fi or Ethernet) the port wanted, 0 for a
+    free one the system picks. A new port_wanted counts from the next start."""
 
     def __init__(self, allowed: set[str] | None = None, port: int = 0):
         self.allowed = set(allowed or ()) | {"127.0.0.1", "::1"}
-        self._port_wanted = port
+        self.port_wanted = port
+        self._bound_wanted = port           # port_wanted when the socket was opened
         self._item: Item | None = None
         self._token = ""
         self._lock = threading.Lock()
@@ -97,12 +125,24 @@ class MediaServer:
     def port(self) -> int:
         return self._httpd.server_address[1] if self._httpd else 0
 
+    @property
+    def stale(self) -> bool:
+        """Running on a port that is no longer the one wanted."""
+        return self._httpd is not None and self._bound_wanted != self.port_wanted
+
     def start(self) -> None:
+        """PortBusy when a fixed port cannot be had."""
         if self._httpd:
             return
         handler = _handler_for(self)
-        self._httpd = ThreadingHTTPServer(("0.0.0.0", self._port_wanted), handler)
-        self._httpd.daemon_threads = True
+        port = self.port_wanted
+        try:
+            self._httpd = _Server(("0.0.0.0", port), handler)
+        except OSError as e:
+            if port:
+                raise PortBusy(port, e.strerror or str(e)) from e
+            raise
+        self._bound_wanted = port
         httpd = self._httpd
         self._thread = threading.Thread(target=lambda: httpd.serve_forever(poll_interval=0.1),
                                         name="media-server", daemon=True)

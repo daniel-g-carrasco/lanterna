@@ -13,13 +13,14 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
 import _setup  # noqa: F401
 from _fake_tv import FakeTV
 
-from lanterna import media, server, transcode
+from lanterna import castv2, media, server, transcode
 from lanterna.castv2 import Channel
 from lanterna.devices import Device
 from lanterna.media import MediaInfo
@@ -407,6 +408,73 @@ class StreamFailureTest(SessionCase):
         s.show([self.path("film.mkv")])
         s._stream_failed(s._generation - 1, "old")
         self.assertEqual((s.state.state, s.state.error), ("playing", ""))
+
+
+class FixedPortTest(SessionCase):
+    """The session with a server of its own, as the window makes it."""
+
+    def own(self, port: int) -> Session:
+        s = Session(self.device, self.states.append, connect=self.connect, probe=fake_probe, producer=fake_producer,
+                    port=port)
+        self.addCleanup(s.close)
+        return s
+
+    def free_port(self) -> int:
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", 0))
+            return probe.getsockname()[1]
+
+    def loaded_port(self) -> int:
+        return urllib.parse.urlsplit(self.tvs[-1].loads[-1]["contentUrl"]).port
+
+    def test_with_a_fixed_port_the_tv_fetches_from_it(self):
+        port = self.free_port()
+        s = self.own(port)
+        s.show([self.path("film.mp4")])
+        self.assertEqual(self.loaded_port(), port)
+        with urllib.request.urlopen(self.tvs[-1].loads[-1]["contentUrl"], timeout=5) as r:
+            self.assertEqual(r.read(), b"x" * 1000)
+
+    def test_a_busy_port_is_said_and_the_tv_is_not_touched(self):
+        port = self.free_port()
+        other = socket.socket()
+        other.bind(("0.0.0.0", port))
+        other.listen()
+        self.addCleanup(other.close)
+        s = self.own(port)
+        with self.assertRaises(SessionError):
+            s.show([self.path("film.mp4")])
+        self.assertEqual(s.state.state, "error")
+        self.assertIn(str(port), s.state.error)
+        self.assertIn("Preferences", s.state.error)
+        self.assertEqual(self.tvs, [])
+        other.close()                                   # freed: the next try works, nothing to restart
+        s.show([self.path("film.mp4")])
+        self.assertEqual((s.state.state, self.loaded_port()), ("playing", port))
+
+    def test_a_new_port_waits_for_stop_while_something_is_on(self):
+        s = self.own(0)
+        s.show([self.path("film.mp4")])
+        before = self.loaded_port()
+        port = self.free_port()
+        s.set_port(port)
+        with urllib.request.urlopen(self.tvs[-1].loads[-1]["contentUrl"], timeout=5) as r:
+            self.assertEqual(r.read(), b"x" * 1000)     # what is on keeps its server
+        s.stop()
+        s.show([self.path("film.mp4")])
+        self.assertNotEqual(before, port)
+        self.assertEqual(self.loaded_port(), port)
+
+    def test_a_new_port_counts_after_a_film_has_ended_on_its_own(self):
+        s = self.own(0)
+        s.show([self.path("film.mp4")])
+        s._on_media(castv2.MediaStatus(state="IDLE", idle_reason="FINISHED"))     # the receiver stays connected
+        self.assertEqual(s.state.state, "idle")
+        port = self.free_port()
+        s.set_port(port)
+        s.show([self.path("film.mp4")])
+        self.assertEqual(len(self.tvs), 1)              # the same connection to the TV
+        self.assertEqual(self.loaded_port(), port)
 
 
 class ClockTest(unittest.TestCase):

@@ -85,6 +85,11 @@
   </requires>
 
   <releases>
+    <release version="0.3.0" date="2026-11-25" type="development">
+      <description>
+        <p>A fixed port for the TV, off by default: with it, a TV on another network behind a firewall needs a single port let through. The icon's flame without the dark line round its edge.</p>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-11-22" type="development">
       <description>
         <p>The first public version: the TVs found on the network, photos, videos and films shown on the TV at full quality (only what the TV cannot play is converted), pause, seek, volume, previous and next, the screen or a window with its sound, and the app's own icon.</p>

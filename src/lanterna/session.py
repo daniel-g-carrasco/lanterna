@@ -92,11 +92,11 @@ class Session:
                  connect: Callable[[Device], castv2.Channel] | None = None,
                  media_server: server.MediaServer | None = None,
                  probe: Callable[[str], media.MediaInfo] = media.probe,
-                 producer: Callable | None = None):
+                 producer: Callable | None = None, port: int = 0):
         self.device = device
         self.on_state = on_state
         self._connect = connect or (lambda d: castv2.Channel.connect(d.host, d.port))
-        self._server = media_server or server.MediaServer()
+        self._server = media_server or server.MediaServer(port=port)
         self._own_server = media_server is None
         self._probe = probe
         self._producer = producer or transcode.stream
@@ -233,6 +233,15 @@ class Session:
         self._fail_for(generation, _("The TV refused this file ({reasons})").format(reasons="; ".join(reasons)))
 
     def _ensure_receiver(self, generation: int) -> None:
+        # The server first, outside the gate below: after a film has ended the receiver is still there, and the port
+        # may have changed meanwhile. A fixed port that cannot be had is said before the TV is touched.
+        if self._own_server:
+            try:
+                self._server.start()
+            except server.PortBusy as e:
+                self._fail_for(generation, _("Port {port} cannot be used ({reason}). Another program may have it: "
+                                             "choose another one in Preferences, or turn the fixed port off.")
+                               .format(port=e.port, reason=e.reason))
         # One at a time: a first LAUNCH takes the TV seconds, and the one that was overtaken decides what happens to
         # the player it opened before the next one asks for it.
         with self._launching:
@@ -248,8 +257,6 @@ class Session:
                 receiver.launch()
             except (castv2.CastError, OSError) as e:
                 self._fail_for(generation, _("{tv} does not answer: {error}").format(tv=self.device.label, error=e))
-            if self._own_server:
-                self._server.start()
             with self._lock:
                 current = generation == self._generation
                 # Something newer is on its way to this same player: it gets the connection too. Closing it here
@@ -407,8 +414,23 @@ class Session:
         if ending:
             ending()
         self._server.withdraw()
+        self._let_go_of_old_port()
         if receiver:
             self._close_on_tv(receiver)
+
+    def set_port(self, port: int) -> None:
+        """The port of this session's own server, 0 for a free one: at once when nothing is shown, else after Stop."""
+        if not self._own_server:
+            return
+        self._server.port_wanted = port
+        with self._lock:
+            idle = self._state.state in ("idle", "error")
+        if idle:
+            self._let_go_of_old_port()
+
+    def _let_go_of_old_port(self) -> None:
+        if self._own_server and self._server.stale:
+            self._server.stop()            # the next show opens the new one
 
     @staticmethod
     def _close_on_tv(receiver: castv2.Receiver) -> None:

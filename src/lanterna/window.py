@@ -341,8 +341,18 @@ class MainWindow(_WindowBase):
             run_in_thread(self.session.close, lambda _r, e: self._report(e))
             self.session = None
         if self.session is None:
-            self.session = self._session_factory(device, self._session_state)
+            self.session = self._session_factory(device, self._session_state, port=self.server_port())
         return self.session
+
+    def server_port(self) -> int:
+        """The port the TV fetches from: the one in the preferences, or 0 for a free one each time."""
+        cfg = self.app.cfg
+        return cfg.server_port if cfg.fixed_port else 0
+
+    def server_port_changed(self) -> None:
+        if self.session is not None:
+            session, port = self.session, self.server_port()
+            run_in_thread(lambda: session.set_port(port), lambda _r, e: self._report(e))
 
     def show_screen(self) -> None:
         """The system's dialog asks what to share; the window stays usable meanwhile."""
@@ -692,6 +702,22 @@ class PreferencesDialog(Adw.PreferencesDialog):
         group.add(quiet)
         page.add(group)
 
+        group = Adw.PreferencesGroup(title=_("Network"))
+        fixed = Adw.SwitchRow(title=_("Fixed port"),
+                              subtitle=_("For a TV on another network behind a firewall: the TV fetches what is shown "
+                                         "from this computer on this port only. Off, a free port is picked each time."),
+                              active=cfg.fixed_port)
+        group.add(fixed)
+        port = Adw.SpinRow.new_with_range(1024, 65535, 1)
+        port.set_title(_("Port"))
+        port.set_value(cfg.server_port)
+        port.set_sensitive(cfg.fixed_port)
+        group.add(port)
+        fixed.connect("notify::active", lambda r, _p: (port.set_sensitive(r.get_active()),
+                                                       self._set_port("fixed_port", r.get_active())))
+        port.connect("notify::value", lambda r, _p: self._set_port("server_port", int(r.get_value())))
+        page.add(group)
+
         if WINDOWS:
             group = Adw.PreferencesGroup(title=_("Updates"))
             updates = Adw.SwitchRow(title=_("Check for updates at start-up"),
@@ -706,6 +732,12 @@ class PreferencesDialog(Adw.PreferencesDialog):
     def _set(self, name: str, value) -> None:
         setattr(self.app.cfg, name, value)
         self.app.save_config()
+
+    def _set_port(self, name: str, value) -> None:
+        if getattr(self.app.cfg, name) == value:
+            return
+        self._set(name, value)
+        self.window.server_port_changed()
 
     def _set_theme(self, theme: str) -> None:
         from .app import apply_theme
