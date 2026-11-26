@@ -9,6 +9,7 @@ import socket
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 import urllib.parse
 from pathlib import Path
 
@@ -99,6 +100,17 @@ class ServerTest(unittest.TestCase):
         old = self.server.publish(Item("film.mp4", "video/mp4", path=str(self.file)), "127.0.0.1")
         self.server.publish(Item("film.mp4", "video/mp4", path=str(self.file)), "127.0.0.1")
         self.assertEqual(self.get(old)[0].status, 404)
+
+    def test_switching_receiver_retires_the_previous_address(self):
+        item = Item("film.mp4", "video/mp4", path=str(self.file))
+        with patch("lanterna.server.local_address_towards", return_value="127.0.0.1"):
+            self.server.publish(item, "192.0.2.1")
+            self.assertIn("192.0.2.1", self.server.allowed)
+            self.server.publish(item, "192.0.2.2")
+        self.assertIn("192.0.2.2", self.server.allowed)
+        self.assertNotIn("192.0.2.1", self.server.allowed)
+        self.server.withdraw()
+        self.assertEqual(self.server.allowed, {"127.0.0.1", "::1"})
 
     def test_withdrawn_and_stopped_serve_nothing(self):
         url = self.server.publish(Item("film.mp4", "video/mp4", path=str(self.file)), "127.0.0.1")

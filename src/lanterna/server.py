@@ -111,7 +111,8 @@ class MediaServer:
     free one the system picks. A new port_wanted counts from the next start."""
 
     def __init__(self, allowed: set[str] | None = None, port: int = 0):
-        self.allowed = set(allowed or ()) | {"127.0.0.1", "::1"}
+        self._default_allowed = frozenset(allowed or ()) | {"127.0.0.1", "::1"}
+        self.allowed = self._default_allowed
         self.port_wanted = port
         self._bound_wanted = port           # port_wanted when the socket was opened
         self._item: Item | None = None
@@ -149,9 +150,7 @@ class MediaServer:
         self._thread.start()
 
     def stop(self) -> None:
-        with self._lock:
-            self._item = None
-            self._token = ""
+        self.withdraw()
         if self._httpd:
             self._httpd.shutdown()
             self._httpd.server_close()
@@ -160,18 +159,19 @@ class MediaServer:
     def publish(self, item: Item, host: str) -> str:
         """Put `item` on (in place of the previous one) and return the URL
         the TV at `host` uses for it."""
+        address = local_address_towards(host)
         with self._lock:
             self._item = item
             self._token = secrets.token_urlsafe(12)
+            self.allowed = self._default_allowed | {host}
             path = f"/{self._token}/{urllib.parse.quote(item.name)}"
-        self.allowed.add(host)
-        address = local_address_towards(host)
         return f"http://{address}:{self.port}{path}"
 
     def withdraw(self) -> None:
         with self._lock:
             self._item = None
             self._token = ""
+            self.allowed = self._default_allowed
 
     def lookup(self, path: str) -> Item | None:
         parts = urllib.parse.urlsplit(path).path.lstrip("/").split("/", 1)

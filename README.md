@@ -83,6 +83,13 @@ On Windows the firewall asks the first time Lanterna serves something. The rule 
 
 ## Development
 
+Pull requests run the Windows and Flatpak builds, Ruff security rules and
+redacted Gitleaks. Release jobs verify the inventories of the installer,
+portable ZIP, and Flatpak before signing. The Pages build records the
+runtime it used and verifies its inventory against the published OSTree
+ref. The weekly audit checks both channels. Native dependencies appear in
+the inventory and can be checked against their distribution advisories.
+
 ```bash
 ruff check --select F,E9,B .                      # lint
 python3 -m unittest discover -s tests -v          # all tests (the window's need a display)
