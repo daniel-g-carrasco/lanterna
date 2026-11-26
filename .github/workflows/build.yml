@@ -34,10 +34,15 @@ jobs:
             build-dir build-aux/flatpak/io.github.daniel_g_carrasco.lanterna.yaml
           flatpak build-bundle repo lanterna.flatpak io.github.daniel_g_carrasco.lanterna stable \
             --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo
+          python3 tools/release_inventory.py create --revision "$GITHUB_SHA" \
+            --flatpak build-dir lanterna.flatpak
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: lanterna-flatpak
-          path: lanterna.flatpak
+          if-no-files-found: error
+          path: |
+            lanterna.flatpak
+            lanterna.flatpak.inventory.json
 
   release:
     needs: [test, flatpak]
@@ -46,9 +51,16 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: lanterna-flatpak
+      - name: Verify the Flatpak inventory and check advisories
+        run: |
+          python3 tools/release_inventory.py check --revision "$GITHUB_SHA" lanterna.flatpak
+          python3 tools/release_inventory.py audit lanterna.flatpak
       - name: Sign the bundle (minisign), checked before anything is uploaded
         env:
           MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
@@ -62,11 +74,15 @@ jobs:
              "untrusted comment:"*) printf '%s\n' "$MINISIGN_SECRET_KEY" ;;
              *) printf 'untrusted comment: releases\n%s\n' "$MINISIGN_SECRET_KEY" ;;
            esac | tr -d '\r' > "$key")
-          f=lanterna.flatpak
-          minisign -S -s "$key" -m "$f" -x "$f.minisig" -t "timestamp:$(date +%s) file:$f hashed" </dev/null
-          minisign -V -P "$PUBLIC_KEY" -m "$f" -x "$f.minisig"
+          for f in lanterna.flatpak lanterna.flatpak.inventory.json; do
+            minisign -S -s "$key" -m "$f" -x "$f.minisig" -t "timestamp:$(date +%s) file:$f hashed" </dev/null
+            minisign -V -P "$PUBLIC_KEY" -m "$f" -x "$f.minisig"
+          done
           rm -f "$key"
       - name: Publish the release
-        run: gh release create "${GITHUB_REF_NAME}" lanterna.flatpak lanterna.flatpak.minisig --repo "${GITHUB_REPOSITORY}" --title "Lanterna ${GITHUB_REF_NAME#v}" --generate-notes
+        run: |
+          gh release create "$GITHUB_REF_NAME" lanterna.flatpak lanterna.flatpak.minisig \
+            lanterna.flatpak.inventory.json lanterna.flatpak.inventory.json.minisig \
+            --repo "$GITHUB_REPOSITORY" --title "Lanterna ${GITHUB_REF_NAME#v}" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}

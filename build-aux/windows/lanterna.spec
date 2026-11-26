@@ -4,13 +4,14 @@
 #   python tools/compile_po.py && python tools/make_ico.py && pyinstaller --noconfirm build-aux/windows/lanterna.spec
 # A spec file, not flags: the gi hook collects GTK 3 unless told otherwise.
 import shutil
+import os
 import sys
 from pathlib import Path
 
 ROOT = Path(SPECPATH).parent.parent
 prefix = Path(sys.prefix)              # MSYS2: C:/msys64/ucrt64
 
-datas = [(str(ROOT / 'data' / 'icons'), 'share/icons')]
+datas = [(str(ROOT / 'data' / 'icons'), 'share/icons'), (str(ROOT / 'LICENSE'), 'licenses')]
 binaries = []
 
 if (ROOT / 'locale').is_dir():
@@ -46,6 +47,15 @@ a = Analysis(
                                             'Graphene': '1.0', 'Gsk': '4.0'}}},
     excludes=['tkinter'],
 )
+
+sys.path.insert(0, str(ROOT / 'tools'))
+from package_inventory import inventory
+
+pure = [row for row in a.pure if row[1] != '-']
+_, notices = inventory([*a.binaries, *a.datas, *pure, *a.scripts],
+                       prefix.parent, ROOT, Path(workpath),
+                       revision=os.environ.get('GITHUB_SHA', 'dev'))
+a.datas += notices
 
 pyz = PYZ(a.pure)
 

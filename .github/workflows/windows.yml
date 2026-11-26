@@ -10,6 +10,7 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+  pull_request:
   workflow_dispatch:
 
 env:
@@ -126,6 +127,10 @@ jobs:
           test -f "$I/share/locale/it/LC_MESSAGES/lanterna.mo"
           test -f "$I/share/icons/hicolor/scalable/apps/io.github.daniel_g_carrasco.lanterna.svg"
           du -sm dist/Lanterna | cut -f1 | xargs -I{} echo "bundle: {} MB"
+      - name: Verify the staged Windows inventory
+        run: |
+          python tools/package_inventory.py --bundle dist/Lanterna --seal Lanterna.exe \
+            --msys-root "$(cygpath -w /)"
       - name: Smoke test (the real exe, a screenshot of its window, one instance)
         run: |
           mkdir -p smoke/config smoke/state smoke/data
@@ -180,6 +185,12 @@ jobs:
           Start-Sleep 15
           if (-not (Get-Process Lanterna -ErrorAction SilentlyContinue)) { Write-Error 'the app was not started again'; exit 1 }
           Get-Process Lanterna | Stop-Process
+      - name: Record Windows release components
+        run: |
+          python tools/package_inventory.py --portable dist/lanterna-*-windows-x64-portable.zip
+          python tools/release_inventory.py create --revision "$GITHUB_SHA" \
+            --gtk-inventory dist/Lanterna/_internal/licenses/inventory.json \
+            dist/lanterna-setup-*.exe dist/lanterna-*-windows-x64-portable.zip
       - name: The tag matches __version__ (a v* tag)
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
@@ -193,7 +204,9 @@ jobs:
           name: lanterna-windows
           path: |
             dist/lanterna-setup-*.exe
+            dist/lanterna-setup-*.exe.inventory.json
             dist/lanterna-*-windows-x64-portable.zip
+            dist/lanterna-*-windows-x64-portable.zip.inventory.json
             smoke/window.png
 
   release:
@@ -206,10 +219,19 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
           name: lanterna-windows
           path: artifact
+      - name: Verify the Windows inventories and check advisories
+        run: |
+          setup="artifact/dist/lanterna-setup-${GITHUB_REF_NAME}-windows-x64.exe"
+          zip="artifact/dist/lanterna-${GITHUB_REF_NAME}-windows-x64-portable.zip"
+          python3 tools/release_inventory.py check --revision "$GITHUB_SHA" "$setup" "$zip"
+          python3 tools/release_inventory.py audit "$setup" "$zip"
       - name: Sign with the project's key (minisign), checked before anything is uploaded
         # the installed app runs an update only with this signature
         # (updates.py, the same public key); the comment names the file,
@@ -227,6 +249,8 @@ jobs:
              *) printf 'untrusted comment: releases\n%s\n' "$MINISIGN_SECRET_KEY" ;;
            esac | tr -d '\r' > "$key")
           for f in "artifact/dist/lanterna-setup-${GITHUB_REF_NAME}-windows-x64.exe" \
+                   "artifact/dist/lanterna-setup-${GITHUB_REF_NAME}-windows-x64.exe.inventory.json" \
+                   "artifact/dist/lanterna-${GITHUB_REF_NAME}-windows-x64-portable.zip.inventory.json" \
                    "artifact/dist/lanterna-${GITHUB_REF_NAME}-windows-x64-portable.zip"; do
             test -f "$f"
             minisign -S -s "$key" -m "$f" -x "$f.minisig" \
@@ -246,4 +270,5 @@ jobs:
             sleep 30
           done
           gh release upload "${GITHUB_REF_NAME}" "$setup" "$zip" "$setup.minisig" "$zip.minisig" \
+            "$setup.inventory.json" "$setup.inventory.json.minisig" "$zip.inventory.json" "$zip.inventory.json.minisig" \
             --repo "${GITHUB_REPOSITORY}" --clobber
