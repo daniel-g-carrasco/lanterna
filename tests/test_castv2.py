@@ -179,6 +179,7 @@ class ConcurrentTlsTest(unittest.TestCase):
         def serve():
             raw, _addr = listener.accept()
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
             context.load_cert_chain(self.cert, self.key)
             accepted.append(Channel(context.wrap_socket(raw, server_side=True)))
         thread = threading.Thread(target=serve, daemon=True)
