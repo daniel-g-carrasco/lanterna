@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "artifact": "io.github.daniel_g_carrasco.lanterna-x86_64-stable.ostree-ref",
+  "sha256": "fd61abf65cc758834c41c5ca0b2f50873606ee5eefbe3bf9e008bd07be74b303",
+  "revision": "c2140a630343473d7a11e2f2be22def6cb9d9c94",
+  "platform": "flatpak",
+  "components": [
+    {
+      "ecosystem": "Flatpak",
+      "name": "org.gnome.Platform/x86_64/50",
+      "version": "47406407f781b156c267b67c78a80a60715c0ff34ab2c051029c61d65fe86c11"
+    }
+  ],
+  "ostree_commit": "07f2ed7e2a0b0f027de6c80cf412c51b637637bf0b6efbe532292e0ad988447f"
+}
