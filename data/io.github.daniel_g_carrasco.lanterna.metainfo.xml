@@ -85,6 +85,11 @@
   </requires>
 
   <releases>
+    <release version="0.3.1" date="2026-11-27" type="development">
+      <description>
+        <p>Only the TV you are showing something on can fetch it, and only while you show it: a TV used before is let go. The connection to the TV takes TLS 1.2 or newer only. On Windows the licence's text and the list of the components inside come with the program.</p>
+      </description>
+    </release>
     <release version="0.3.0" date="2026-11-25" type="development">
       <description>
         <p>A fixed port for the TV, off by default: with it, a TV on another network behind a firewall needs a single port let through. The icon's flame without the dark line round its edge.</p>

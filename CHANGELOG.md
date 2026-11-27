@@ -6,6 +6,20 @@ are `0.x`, development releases, published as Flatpak updates from the app's
 own repository and as Windows installers. The same notes, shorter, are in
 the app's metainfo, which software centres show.
 
+## [0.3.1] - 2026-11-27
+
+### Fixed
+- Only the TV you are showing something on can fetch it from Lanterna, and
+  only while you show it. A TV you showed something on before, in the same
+  session, could still reach Lanterna's small web server until you closed
+  the app; when you switch to another TV or stop, the one before is let go.
+- The connection to the TV takes TLS 1.2 or newer only.
+
+### Changed
+- The licence's text and the list of the components inside come with the
+  program: in Lanterna's folder on Windows, in the installer and in the
+  portable zip.
+
 ## [0.3.0] - 2026-11-25
 
 ### Added
@@ -51,5 +65,6 @@ The first public version.
   preferences, the translations, the installer for Windows and the Flatpak
   for Linux every app of this author has.
 
+[0.3.1]: https://github.com/daniel-g-carrasco/lanterna/releases/tag/v0.3.1
 [0.3.0]: https://github.com/daniel-g-carrasco/lanterna/releases/tag/v0.3.0
 [0.2.0]: https://github.com/daniel-g-carrasco/lanterna/releases/tag/v0.2.0
